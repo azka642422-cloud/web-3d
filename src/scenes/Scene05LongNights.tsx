@@ -1,12 +1,3 @@
-import React from 'react';
-import { RecurringTable } from '../experience/RecurringTable';
-
-export const Scene05LongNights: React.FC = () => {
-  return (
-    <group>
-      <RecurringTable />
-      {/* Desk lamp point light */}
-      <pointLight position={[0.6, 1.2, 0]} color="#fef08a" intensity={3} distance={5} decay={2} />
-    </group>
-  );
-};
+import { MemoryGallery } from '../experience/MemoryGallery'; import { RecurringTable } from '../experience/RecurringTable'; import { useExperienceStore } from '../stores/useExperienceStore';
+export const Scene05LongNights = () => { const beat = useExperienceStore(s => s.beat); const gate = beat >= 9; return <group>{beat < 7 && <RecurringTable />}{beat === 2 && <MemoryGallery chapters={['family']} />}{(beat === 7 || beat === 8) && <MemoryGallery chapters={['pondok','service','college','wedding','family','longNights']} radius={5.5} depth={-7} />}
+  {!gate && <pointLight position={[.6,1.4,0]} color="#f9cb75" intensity={beat === 6 ? .15 : 3} distance={6} />}{gate && <group position={[0,1,-12]}><mesh position={[-1.15,0,0]} rotation={[0, beat === 10 ? -1.1 : 0, 0]}><boxGeometry args={[2.2,4,.15]} /><meshStandardMaterial color="#121b2d" /></mesh><mesh position={[1.15,0,0]} rotation={[0, beat === 10 ? 1.1 : 0, 0]}><boxGeometry args={[2.2,4,.15]} /><meshStandardMaterial color="#121b2d" /></mesh><pointLight position={[0,0,-.7]} color="#ffd976" intensity={beat === 10 ? 8 : 1.3} /></group>}</group>; };

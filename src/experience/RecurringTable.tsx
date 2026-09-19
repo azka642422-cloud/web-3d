@@ -4,13 +4,13 @@ import * as THREE from 'three';
 import { useExperienceStore } from '../stores/useExperienceStore';
 
 export const RecurringTable: React.FC = () => {
-  const { currentScene } = useExperienceStore();
+  const { currentScene, reducedMotion } = useExperienceStore();
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
     if (!groupRef.current) return;
     const t = state.clock.getElapsedTime();
-    groupRef.current.position.y = Math.sin(t * 0.5) * 0.02;
+    groupRef.current.position.y = -0.6 + (reducedMotion ? 0 : Math.sin(t * 0.5) * 0.02);
   });
 
   return (
