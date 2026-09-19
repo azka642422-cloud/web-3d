@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --allow-build=esbuild
       - run: pnpm lint
       - run: pnpm build
       - uses: actions/configure-pages@v5
@@ -43,3 +43,4 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
