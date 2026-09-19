@@ -1,50 +1,43 @@
 import { storyContent } from '../content/storyData';
-import { MemoryPhoto, StoryContent } from '../types';
+import type { Chapter, MemoryPhoto, StoryContent } from '../types';
 
-export class StoryService {
-  static async getStoryContent(): Promise<StoryContent> {
-    // Simulated async fetch ready for future backend/API migration
-    return Promise.resolve(storyContent);
-  }
+export const StoryService = {
+  getContent: (): Readonly<StoryContent> => storyContent,
+  getPhotos: (chapters?: Chapter[]): MemoryPhoto[] => {
+    const keys = chapters ?? (Object.keys(storyContent.photos) as Chapter[]);
+    return keys.flatMap(chapter => storyContent.photos[chapter]).sort((a, b) => a.sortOrder - b.sortOrder);
+  },
+};
 
-  static async updatePersonalMessage(message: string): Promise<void> {
-    storyContent.personalMessage = message;
-    return Promise.resolve();
-  }
-}
+type LoadState = 'idle' | 'loading' | 'ready' | 'error';
+const cache = new Map<string, Promise<boolean>>();
+const chapterState = new Map<Chapter, LoadState>();
 
-export class MemoryService {
-  static async getAllPhotos(): Promise<MemoryPhoto[]> {
-    const all = [
-      ...storyContent.photos.pondok,
-      ...storyContent.photos.service,
-      ...storyContent.photos.college,
-      ...storyContent.photos.wedding,
-      ...storyContent.photos.family,
-      ...storyContent.photos.graduation,
-      ...storyContent.photos.epilogue,
-    ];
-    return Promise.resolve(all);
-  }
-
-  static async getPhotosByChapter(chapter: MemoryPhoto['chapter']): Promise<MemoryPhoto[]> {
-    const all = await MemoryService.getAllPhotos();
-    return all.filter(p => p.chapter === chapter);
-  }
-}
-
-export class MediaService {
-  static preloadImage(url: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.src = url;
-      img.onload = () => resolve();
-      img.onerror = () => resolve(); // Graceful fallback
+export const MediaService = {
+  state(chapter: Chapter): LoadState { return chapterState.get(chapter) ?? 'idle'; },
+  preloadImage(url: string): Promise<boolean> {
+    if (cache.has(url)) return cache.get(url)!;
+    const task = new Promise<boolean>(resolve => {
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = () => resolve(true);
+      image.onerror = () => resolve(false);
+      image.src = url;
     });
-  }
-
-  static async preloadChapterAssets(chapter: string): Promise<void> {
-    // Progressive asset loading simulation
-    return Promise.resolve();
-  }
-}
+    cache.set(url, task);
+    return task;
+  },
+  async preloadChapter(chapter: Chapter): Promise<void> {
+    if (chapterState.get(chapter) === 'ready' || chapterState.get(chapter) === 'loading') return;
+    chapterState.set(chapter, 'loading');
+    const result = await Promise.all(StoryService.getPhotos([chapter]).map(photo => this.preloadImage(photo.thumbnailUrl)));
+    chapterState.set(chapter, result.every(Boolean) ? 'ready' : 'error');
+  },
+  async preloadNext(scene: number): Promise<void> {
+    const chapters: Partial<Record<number, Chapter[]>> = {
+      1: ['pondok'], 2: ['service', 'college'], 3: ['wedding', 'family'],
+      4: ['longNights'], 5: ['graduation'], 6: ['graduation'],
+    };
+    await Promise.all((chapters[scene] ?? []).map(chapter => this.preloadChapter(chapter)));
+  },
+};

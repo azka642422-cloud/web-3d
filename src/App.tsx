@@ -14,10 +14,12 @@ import { UIOverlay } from './components/UIOverlay';
 import { AudioPlayer } from './components/AudioPlayer';
 import { PhotoModal } from './components/PhotoModal';
 import { GalleryModal } from './components/GalleryModal';
+import { ExperienceRuntime } from './components/ExperienceRuntime';
 
 export default function App() {
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#040814] select-none">
+      <ExperienceRuntime />
       <ExperienceCanvas />
       <UIOverlay />
       <AudioPlayer />
@@ -26,5 +28,4 @@ export default function App() {
     </main>
   );
 }
-
 

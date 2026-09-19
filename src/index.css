@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+:root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #040814; }
+body { margin: 0; overscroll-behavior: none; }
+button { touch-action: manipulation; }
+.control { display:grid; place-items:center; width:2.6rem; height:2.6rem; border-radius:999px; border:1px solid rgb(255 255 255 / .14); background:rgb(3 8 20 / .66); color:#f6d58e; }
+.control svg { width:1rem; height:1rem; }
+.primary,.secondary { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; border-radius:999px; padding:.75rem 1.2rem; font-size:.75rem; font-weight:700; letter-spacing:.06em; }
+.primary { background:#d8a84b; color:#07101f; }
+.secondary { border:1px solid rgb(245 199 104 / .4); background:rgb(255 255 255 / .07); color:#f7d997; }
+.primary svg,.secondary svg { width:1rem; height:1rem; }
+.primary:focus-visible,.secondary:focus-visible,.control:focus-visible { outline:3px solid #fde68a; outline-offset:3px; }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
