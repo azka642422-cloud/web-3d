@@ -7,7 +7,7 @@ const memories = (chapter: Chapter, titles: string[]): MemoryPhoto[] => titles.m
   sortOrder: index + 1, placeholder: true, aspectRatio: 1.4,
 }));
 export const storyContent: StoryContent = {
-  recipientName: '[FULL_NAME]', partnerName: '[PARTNER_NAME]', yourName: '[YOUR_NAME]',
+  recipientName: 'Addina Auva', partnerName: '[PARTNER_NAME]', yourName: '[YOUR_NAME]',
   degree: '[DEGREE]', university: '[UNIVERSITY]', program: 'Pendidikan Agama Islam',
   graduationYear: '[YEAR]', finalProject: '[FINAL_PROJECT_DATA]',
   pondokName: 'P3HM — LIRBOYO', pondokYears: '[PONDOK_YEARS]', weddingDate: '[WEDDING_DATE]',
@@ -22,4 +22,5 @@ export const storyContent: StoryContent = {
     graduation: memories('graduation', ['Wisuda']),
   },
 };
+
 
