@@ -2,14 +2,34 @@ import React, { useEffect, useRef } from 'react';
 import { useExperienceStore } from '../stores/useExperienceStore';
 
 export const AudioPlayer: React.FC = () => {
-  const { audioPlaying, audioMuted, audioVolume } = useExperienceStore();
+  const { audioPlaying, audioMuted, audioVolume, userHasStarted } = useExperienceStore();
   const audioCtxRef = useRef<AudioContext | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
   const oscillatorsRef = useRef<OscillatorNode[]>([]);
-  const isRunningRef = useRef(false);
 
   useEffect(() => {
-    if (!audioPlaying || audioMuted) {
+    const handleVisibilityChange = () => {
+      if (document.hidden && gainNodeRef.current && audioCtxRef.current) {
+        try {
+          gainNodeRef.current.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.3);
+        } catch (e) {
+          // ignore
+        }
+      } else if (!document.hidden && audioPlaying && !audioMuted && gainNodeRef.current && audioCtxRef.current) {
+        try {
+          gainNodeRef.current.gain.setTargetAtTime(audioVolume * 0.25, audioCtxRef.current.currentTime, 0.5);
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [audioPlaying, audioMuted, audioVolume]);
+
+  useEffect(() => {
+    if (!userHasStarted || !audioPlaying || audioMuted) {
       if (gainNodeRef.current && audioCtxRef.current) {
         try {
           gainNodeRef.current.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.5);
@@ -20,7 +40,6 @@ export const AudioPlayer: React.FC = () => {
       return;
     }
 
-    // Initialize Web Audio ambient cinematic pad (Warm chords in F major / D minor - sentimental & uplifting)
     try {
       if (!audioCtxRef.current) {
         const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -38,7 +57,7 @@ export const AudioPlayer: React.FC = () => {
         masterGain.connect(ctx.destination);
         gainNodeRef.current = masterGain;
 
-        // F major / D minor chord frequencies (F3, A3, C4, D4, A4)
+        // F major / D minor chord frequencies (F3, A3, C4, D4, A4) with gentle warmth
         const freqs = [174.61, 220.0, 261.63, 293.66, 349.23];
         oscillatorsRef.current = freqs.map((f, i) => {
           const osc = ctx.createOscillator();
@@ -49,7 +68,7 @@ export const AudioPlayer: React.FC = () => {
           osc.frequency.setValueAtTime(f, ctx.currentTime);
 
           filter.type = 'lowpass';
-          filter.frequency.setValueAtTime(600 + i * 100, ctx.currentTime);
+          filter.frequency.setValueAtTime(500 + i * 120, ctx.currentTime);
 
           osc.connect(filter);
           if (pan) {
@@ -68,16 +87,12 @@ export const AudioPlayer: React.FC = () => {
       if (gainNodeRef.current) {
         const targetVol = audioMuted ? 0 : audioVolume * 0.25;
         gainNodeRef.current.gain.setTargetAtTime(targetVol, ctx.currentTime, 1.5);
-        isRunningRef.current = true;
       }
     } catch (e) {
-      console.warn('Web Audio API not fully initialized yet:', e);
+      console.warn('Web Audio API initialization note:', e);
     }
+  }, [userHasStarted, audioPlaying, audioMuted, audioVolume]);
 
-    return () => {
-      // Keep running unless stopped
-    };
-  }, [audioPlaying, audioMuted, audioVolume]);
-
-  return null; // Headless audio manager
+  return null;
 };
+

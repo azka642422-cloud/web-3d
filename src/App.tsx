@@ -13,6 +13,7 @@ import { ExperienceCanvas } from './experience/ExperienceCanvas';
 import { UIOverlay } from './components/UIOverlay';
 import { AudioPlayer } from './components/AudioPlayer';
 import { PhotoModal } from './components/PhotoModal';
+import { GalleryModal } from './components/GalleryModal';
 
 export default function App() {
   return (
@@ -21,7 +22,9 @@ export default function App() {
       <UIOverlay />
       <AudioPlayer />
       <PhotoModal />
+      <GalleryModal />
     </main>
   );
 }
+
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Volume2, VolumeX, Sparkles, ChevronRight, RotateCcw, Bug } from 'lucide-react';
+import { Volume2, VolumeX, Sparkles, ChevronRight, RotateCcw, Bug, LayoutGrid } from 'lucide-react';
 import { useExperienceStore } from '../stores/useExperienceStore';
 import { storyContent } from '../content/storyData';
 
@@ -10,15 +10,20 @@ export const UIOverlay: React.FC = () => {
     setScene,
     userHasStarted,
     startExperience,
+    resetExperience,
     audioMuted,
     setAudioMuted,
     qualityLevel,
     setQualityLevel,
     debugMode,
-    toggleDebugMode
+    toggleDebugMode,
+    setGalleryOpen,
+    graduationGateUnlocked,
+    setGraduationGateUnlocked
   } = useExperienceStore();
 
   const [transitioningText, setTransitioningText] = useState(false);
+  const [gateProgress, setGateProgress] = useState(0);
 
   const handleStart = () => {
     setTransitioningText(true);
@@ -29,9 +34,14 @@ export const UIOverlay: React.FC = () => {
     }, 2800);
   };
 
+  const handleGateUnlock = () => {
+    setGraduationGateUnlocked(true);
+    setScene(6);
+  };
+
   return (
     <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6 sm:p-10 select-none">
-      {/* Top Bar: Minimal controls & Audio & Debug */}
+      {/* Top Bar: Minimal controls & Audio & Debug & Gallery */}
       <div className="flex items-center justify-between w-full pointer-events-auto">
         <div className="flex items-center space-x-3">
           <span className="text-xs uppercase tracking-[0.25em] text-amber-300/90 font-serif font-medium">
@@ -44,6 +54,16 @@ export const UIOverlay: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-3">
+          {/* Gallery Button */}
+          <button
+            onClick={() => setGalleryOpen(true)}
+            className="p-2 px-3 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors backdrop-blur-sm flex items-center space-x-1.5 text-xs font-medium"
+            title="Lihat Semua Foto"
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden sm:inline">Lihat Semua Foto</span>
+          </button>
+
           {/* Debug Toggle */}
           <button
             onClick={toggleDebugMode}
@@ -193,7 +213,7 @@ export const UIOverlay: React.FC = () => {
                 “Perjalanan di tempat ini belum usai. Kini, bukan hanya tentang belajar. Ada amanah yang mulai dijalani.”
               </p>
               <p className="text-xs text-slate-300 font-light">
-                Pendidikan Agama Islam (PAI) Tribakti Lirboyo
+                {storyContent.university}
               </p>
               <div className="pt-4 flex justify-center space-x-4">
                 <button
@@ -231,27 +251,60 @@ export const UIOverlay: React.FC = () => {
               </div>
             </motion.div>
           ) : currentScene === 5 ? (
-            /* SCENE 05 LONG NIGHTS */
+            /* SCENE 05 LONG NIGHTS & INTERACTIVE GRADUATION GATE */
             <motion.div
               key="scene-5"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              className="space-y-4 bg-black/50 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl"
+              className="space-y-5 bg-black/60 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-amber-500/30 shadow-2xl max-w-xl mx-auto"
             >
-              <div className="text-xs uppercase tracking-widest text-blue-300 font-semibold">
-                THE LONG NIGHTS
+              <div className="text-xs uppercase tracking-widest text-amber-300 font-semibold">
+                THE LONG NIGHTS & GERBANG WISUDA
               </div>
-              <p className="text-xl sm:text-2xl font-serif text-white italic">
-                “Tidak semua perjalanan dilalui dengan mudah. Banyak hal berjalan dalam waktu yang sama.”
+              <p className="text-lg sm:text-xl font-serif text-white italic">
+                “Lihatlah seberapa jauh perjalanan ini telah dilalui.”
               </p>
-              <div className="pt-4 flex justify-center space-x-4">
-                <button
-                  onClick={() => setScene(6)}
-                  className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-[#040814] font-semibold rounded-full text-xs tracking-wider transition-transform hover:scale-105 shadow-xl flex items-center space-x-2"
-                >
-                  <span>Buka Gerbang Wisuda →</span>
-                </button>
+              <p className="text-xs text-slate-300">
+                Geser atau klik tombol di bawah untuk membuka gerbang menuju pencapaian akhir.
+              </p>
+
+              {/* Interactive Gateway Gesture */}
+              <div className="space-y-3 pt-2">
+                <div className="relative w-full h-12 bg-black/80 rounded-full border border-amber-500/40 overflow-hidden flex items-center px-2">
+                  <div 
+                    className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-amber-500/30 to-amber-400/50 transition-all"
+                    style={{ width: `${Math.max(15, gateProgress)}%` }}
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={gateProgress}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setGateProgress(val);
+                      if (val >= 95) {
+                        handleGateUnlock();
+                      }
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                    aria-label="Geser untuk membuka gerbang"
+                  />
+                  <span className="w-full text-center text-xs uppercase tracking-widest text-amber-200 font-semibold z-0">
+                    {gateProgress >= 95 ? 'Gerbang Terbuka ✨' : '← Geser untuk Membuka →'}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center text-[10px] text-slate-400 px-1">
+                  <span>Tahan & Geser ke Kanan</span>
+                  <button
+                    onClick={handleGateUnlock}
+                    className="text-amber-300 underline hover:text-amber-200"
+                  >
+                    Buka Langsung
+                  </button>
+                </div>
               </div>
             </motion.div>
           ) : currentScene === 6 ? (
@@ -290,7 +343,7 @@ export const UIOverlay: React.FC = () => {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              className="space-y-4 bg-black/70 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl"
+              className="space-y-4 bg-black/70 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl max-w-xl mx-auto"
             >
               <div className="text-xs uppercase tracking-widest text-amber-300 font-semibold">
                 THE JOURNEY CONTINUES
@@ -303,12 +356,24 @@ export const UIOverlay: React.FC = () => {
               </p>
               <div className="pt-4 flex flex-wrap justify-center gap-3">
                 <button
-                  onClick={() => setScene(1)}
+                  onClick={() => {
+                    resetExperience();
+                  }}
                   className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full text-xs font-semibold tracking-wider transition-colors flex items-center space-x-2"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>Putar Lagi</span>
                 </button>
+                <button
+                  onClick={() => setGalleryOpen(true)}
+                  className="px-6 py-2.5 bg-amber-500 text-[#040814] font-semibold rounded-full text-xs tracking-wider transition-colors flex items-center space-x-2"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span>Lihat Semua Foto</span>
+                </button>
+              </div>
+              <div className="pt-2 text-[11px] text-slate-400 font-light">
+                Made with ❤️ by {storyContent.yourName}
               </div>
             </motion.div>
           ) : null}
@@ -321,7 +386,10 @@ export const UIOverlay: React.FC = () => {
           {[1, 2, 3, 4, 5, 6, 7].map((s) => (
             <button
               key={s}
-              onClick={() => setScene(s)}
+              onClick={() => {
+                if (s === 6 && !graduationGateUnlocked && !debugMode) return;
+                setScene(s);
+              }}
               className={`h-2 rounded-full transition-all duration-300 ${
                 currentScene === s ? 'w-6 bg-amber-400' : 'w-2 bg-white/30 hover:bg-white/60'
               }`}
@@ -334,4 +402,5 @@ export const UIOverlay: React.FC = () => {
     </div>
   );
 };
+
 
