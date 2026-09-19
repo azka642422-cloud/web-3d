@@ -1,0 +1,6 @@
+{
+  "name": "The Journey — A Graduation Story",
+  "description": "An interactive cinematic 3D memory journey celebrating graduation, overlapping responsibilities, and enduring perseverance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
